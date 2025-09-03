@@ -926,7 +926,7 @@ while ($row = mysqli_fetch_assoc($result)) {
         </p>
         <ul class="text-justify">
           <li><strong>Rekening :</strong> BSI – <code>7134197557</code></li>
-          <li><strong>Atas Nama :</strong> </li>
+          <li><strong>Atas Nama :</strong> M. Wira Satria Buana</li>
           <li><strong>Instansi :</strong> RS. Permata Hati Muara Bungo - Jambi</li>
           <li><strong>No. Tlp :</strong> 0821 7784 6209</li>
         </ul>
