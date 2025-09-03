@@ -1,0 +1,17 @@
+{
+    "name": "wira/dist",
+    "autoload": {
+        "psr-4": {
+            "Wira\\Dist\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Wira Muhammad",
+            "email": "wiramuhammad16@gmail.com"
+        }
+    ],
+    "require": {
+        "cboden/ratchet": "^0.4.4"
+    }
+}

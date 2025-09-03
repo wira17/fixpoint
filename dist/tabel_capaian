@@ -1,0 +1,12 @@
+CREATE TABLE capaian_imut_rs (
+    id INT(11) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    imut_id INT(11) NOT NULL,         -- FK ke master_imut_rs.id
+    unit_id INT(11) NOT NULL,         -- FK ke unit_kerja.id
+    tanggal DATE NOT NULL,
+    nilai DECIMAL(10,2) NOT NULL,     -- nilai capaian, misal persentase
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (imut_id) REFERENCES master_imut_rs(id) ON DELETE CASCADE,
+    FOREIGN KEY (unit_id) REFERENCES unit_kerja(id) ON DELETE CASCADE,
+    UNIQUE KEY unik_capaian (imut_id, unit_id, tanggal)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

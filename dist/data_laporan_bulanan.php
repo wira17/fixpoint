@@ -1,0 +1,215 @@
+<?php
+include 'security.php'; // sudah handle session_start + cek login + timeout
+include 'koneksi.php';
+date_default_timezone_set('Asia/Jakarta');
+
+$user_id = $_SESSION['user_id'];
+
+
+
+
+$bulan_arr = ['01'=>'Januari','02'=>'Februari','03'=>'Maret','04'=>'April','05'=>'Mei','06'=>'Juni',
+              '07'=>'Juli','08'=>'Agustus','09'=>'September','10'=>'Oktober','11'=>'November','12'=>'Desember'];
+
+// Ambil filter
+$filter_bulan = $_GET['bulan'] ?? '';
+$filter_tahun = $_GET['tahun'] ?? '';
+$filter_unit = $_GET['unit_kerja'] ?? '';
+$page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$limit = 5;
+$offset = ($page - 1) * $limit;
+
+// Query tambahan
+$where = [];
+if (!empty($filter_bulan)) $where[] = "l.bulan = '".mysqli_real_escape_string($conn, $filter_bulan)."'";
+if (!empty($filter_tahun)) $where[] = "l.tahun = '".mysqli_real_escape_string($conn, $filter_tahun)."'";
+if (!empty($filter_unit)) $where[] = "u.unit_kerja = '".mysqli_real_escape_string($conn, $filter_unit)."'";
+$where_sql = count($where) ? "WHERE ".implode(" AND ", $where) : "";
+
+// Hitung total data
+$q_total = mysqli_query($conn, "SELECT COUNT(*) as total FROM laporan_bulanan l JOIN users u ON l.user_id = u.id $where_sql");
+$total_data = mysqli_fetch_assoc($q_total)['total'];
+$total_pages = ceil($total_data / $limit);
+
+// Ambil data paginated
+$q = mysqli_query($conn, "SELECT l.*, u.nik, u.nama, u.jabatan, u.unit_kerja 
+                          FROM laporan_bulanan l 
+                          JOIN users u ON l.user_id = u.id 
+                          $where_sql
+                          ORDER BY l.tahun DESC, l.bulan DESC 
+                          LIMIT $limit OFFSET $offset");
+?>
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Daftar Laporan Bulanan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="assets/modules/bootstrap/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="assets/modules/fontawesome/css/all.min.css" />
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <link rel="stylesheet" href="assets/css/components.css" />
+<style>
+  .table-nowrap td, .table-nowrap th {
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+  thead th {
+    background-color: #000 !important;
+    color: #fff !important;
+  }
+</style>
+
+</head>
+
+<body>
+<div id="app">
+  <div class="main-wrapper main-wrapper-1">
+    <?php include 'navbar.php'; ?>
+    <?php include 'sidebar.php'; ?>
+
+    <div class="main-content">
+      <section class="section">
+        <div class="section-body">
+          <div class="card">
+            <div class="card-header">
+              <h4><i class="fas fa-calendar-alt text-primary mr-2"></i> Daftar Laporan Bulanan Seluruh Unit</h4>
+            </div>
+
+            <div class="card-body">
+              <!-- Filter Form -->
+              <form method="GET" class="form-inline mb-4">
+                <label class="mr-2">Bulan:</label>
+                <select name="bulan" class="form-control mr-3">
+                  <option value="">Semua</option>
+                  <?php foreach ($bulan_arr as $val => $nama): ?>
+                    <option value="<?= $val ?>" <?= ($filter_bulan == $val ? 'selected' : '') ?>><?= $nama ?></option>
+                  <?php endforeach; ?>
+                </select>
+
+                <label class="mr-2">Tahun:</label>
+                <select name="tahun" class="form-control mr-3">
+                  <option value="">Semua</option>
+                  <?php
+                  $q_tahun = mysqli_query($conn, "SELECT DISTINCT tahun FROM laporan_bulanan ORDER BY tahun DESC");
+                  while ($t = mysqli_fetch_assoc($q_tahun)) {
+                    $selected = ($filter_tahun == $t['tahun']) ? 'selected' : '';
+                    echo "<option value='{$t['tahun']}' $selected>{$t['tahun']}</option>";
+                  }
+                  ?>
+                </select>
+
+                <label class="mr-2">Unit Kerja:</label>
+                <select name="unit_kerja" class="form-control mr-3">
+                  <option value="">Semua</option>
+                  <?php
+                  $q_unit = mysqli_query($conn, "SELECT DISTINCT unit_kerja FROM users WHERE unit_kerja IS NOT NULL ORDER BY unit_kerja ASC");
+                  while ($u = mysqli_fetch_assoc($q_unit)) {
+                    $sel = ($filter_unit == $u['unit_kerja']) ? 'selected' : '';
+                    echo "<option value='{$u['unit_kerja']}' $sel>{$u['unit_kerja']}</option>";
+                  }
+                  ?>
+                </select>
+
+                <button type="submit" class="btn btn-primary">Filter</button>
+              </form>
+
+              <div class="table-responsive mt-3">
+                <table class="table table-bordered table-striped table-nowrap">
+                  <thead class="thead-light">
+                    <tr>
+                      <th>No</th>
+                      <th>NIK</th>
+                      <th>Nama</th>
+                      <th>Jabatan</th>
+                      <th>Unit Kerja</th>
+                      <th>Bulan</th>
+                      <th>Tahun</th>
+                      <th>Judul</th>
+                      <th>Keterangan</th>
+                      <th>Dokumen</th>
+                    </tr>
+                  </thead>
+               <tbody>
+<?php
+$no = $offset + 1;
+if (mysqli_num_rows($q) > 0) {
+  while ($d = mysqli_fetch_assoc($q)) {
+    echo "<tr>
+      <td>{$no}</td>
+      <td>{$d['nik']}</td>
+      <td>{$d['nama']}</td>
+      <td>{$d['jabatan']}</td>
+      <td>{$d['unit_kerja']}</td>
+      <td>{$bulan_arr[$d['bulan']]}</td>
+      <td>{$d['tahun']}</td>
+      <td>" . htmlspecialchars($d['judul']) . "</td>
+      <td>" . nl2br(htmlspecialchars($d['keterangan'])) . "</td>
+      <td>";
+      if (!empty($d['file_laporan'])) {
+        echo "<a href='uploads/laporan_bulanan/{$d['file_laporan']}' target='_blank' class='btn btn-sm btn-secondary'><i class='fas fa-file-download'></i></a>";
+      } else {
+        echo "<span class='text-muted'>-</span>";
+      }
+      echo "</td>
+    </tr>";
+    $no++;
+  }
+} else {
+  echo "<tr><td colspan='10' class='text-center'>Belum ada data laporan.</td></tr>";
+}
+?>
+</tbody>
+
+                </table>
+
+                <?php if ($total_pages > 1): ?>
+  <nav aria-label="Page navigation" class="mt-3">
+    <ul class="pagination justify-content-center">
+      <?php
+      // Buat query string untuk mempertahankan filter
+      $query_params = $_GET;
+      $query_params['page'] = 1;
+      $base_url = strtok($_SERVER["REQUEST_URI"], '?') . '?' . http_build_query(array_diff_key($query_params, ['page' => '']));
+
+      if ($page > 1):
+        $query_params['page'] = $page - 1;
+        echo '<li class="page-item"><a class="page-link" href="?' . http_build_query($query_params) . '">Previous</a></li>';
+      endif;
+
+      for ($i = 1; $i <= $total_pages; $i++):
+        $query_params['page'] = $i;
+        $active = $i == $page ? 'active' : '';
+        echo "<li class='page-item $active'><a class='page-link' href='?" . http_build_query($query_params) . "'>$i</a></li>";
+      endfor;
+
+      if ($page < $total_pages):
+        $query_params['page'] = $page + 1;
+        echo '<li class="page-item"><a class="page-link" href="?' . http_build_query($query_params) . '">Next</a></li>';
+      endif;
+      ?>
+    </ul>
+  </nav>
+<?php endif; ?>
+
+              </div>
+            </div> <!-- card-body -->
+          </div> <!-- card -->
+        </div> <!-- section-body -->
+      </section>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="assets/modules/jquery.min.js"></script>
+<script src="assets/modules/popper.js"></script>
+<script src="assets/modules/bootstrap/js/bootstrap.min.js"></script>
+<script src="assets/modules/nicescroll/jquery.nicescroll.min.js"></script>
+<script src="assets/modules/moment.min.js"></script>
+<script src="assets/js/stisla.js"></script>
+<script src="assets/js/scripts.js"></script>
+<script src="assets/js/custom.js"></script>
+</body>
+</html>

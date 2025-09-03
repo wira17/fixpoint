@@ -1,0 +1,55 @@
+{
+  "name": "jquery-ui-multidatespicker",
+  "description": "Extension to the jQuery UI Calendar allowing multiple selections",
+  "author": "Luca Lauretta <luca@lauretta.info>",
+  "license": "(MIT OR GPLv2)",
+  "version": "1.6.8",
+  "main": "jquery-ui.multidatespicker.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dubrox/Multiple-Dates-Picker-for-jQuery-UI.git"
+  },
+  "dependencies": {
+    "jquery": "1.9.1 - 3.7.x",
+    "jquery-ui": "1.7.0 - 1.14.x"
+  },
+  "keywords": [
+    "jquery",
+    "jquery-ui",
+    "calendar",
+    "datepicker",
+    "dates",
+    "multidatespicker",
+    "multidates",
+    "multiple",
+    "range"
+  ],
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/dubrox/Multiple-Dates-Picker-for-jQuery-UI/issues"
+  },
+  "homepage": "https://dubrox.github.io/Multiple-Dates-Picker-for-jQuery-UI",
+  "scripts": {
+    "format": "prettier --write --ignore-unknown",
+    "lint": "eslint --cache --fix",
+    "test": "jest",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.js": "npm run lint",
+    "*.*": "npm run format"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.18.0",
+    "eslint": "^9.18.0",
+    "eslint-config-prettier": "^10.0.1",
+    "esm": "^3.2.25",
+    "globals": "^15.14.0",
+    "husky": "^9.1.7",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "jsom": "^1.0.0",
+    "lint-staged": "^15.3.0",
+    "prettier": "3.4.2"
+  }
+}
