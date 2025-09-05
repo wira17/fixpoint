@@ -156,7 +156,7 @@ Jika ada pertanyaan, saran, atau ingin mendukung pengembangan FixPoint, silakan 
 
 - **YouTube / Tutorial & Demo:** (https://www.youtube.com/@omajib8525)
 - **Donasi / Dukungan Finansial:**  
-  - **Bank BSI:** 7134197557 a.n. M. Wira Satrua Buana
+  - **Bank BSI:** 7134197557 a.n. M. Wira Satria Buana
 - **Email:** wiramuhammad16@gmail.com
 - **Tlp/WA:** 0821 7784 6209
 
