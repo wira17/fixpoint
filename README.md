@@ -136,6 +136,11 @@ FixPoint adalah sebuah aplikasi terpadu yang dirancang untuk membantu perusahaan
    ```bash
    git clone https://github.com/wira17/fixpoint.git
 
+## Update
+- Menu Profil (update mandiri data karyawan)
+- Menu HRD (data karyawan)
+- Menu HRD (exit Clearance)
+
 # Lisensi FixPoint – Smart Office Management System
 
 Hak Cipta (c) 2025 M.Wira,Sb. S. Kom
