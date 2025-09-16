@@ -3,7 +3,7 @@
 
 // Path file sidebar.php dan hash aslinya (saat masih utuh)
 $sidebar_path = __DIR__ . '/sidebar.php';
-$expected_hash = 'e3f654c15ac9bbd6ac2fa29bd25b8307dcb339a9'; 
+$expected_hash = '3c7694504097439a543b88d651d91b18a94c6bc3'; 
 
 // Cek file sidebar.php masih ada?
 if (!file_exists($sidebar_path)) {

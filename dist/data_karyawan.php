@@ -3,6 +3,7 @@ session_start();
 include 'koneksi.php';
 date_default_timezone_set('Asia/Jakarta');
 
+// Cek login
 $user_id = $_SESSION['user_id'] ?? 0;
 if ($user_id == 0) {
     echo "<script>alert('Anda belum login.'); window.location.href='login.php';</script>";
@@ -24,101 +25,30 @@ if (!$result || $result->num_rows == 0) {
     exit;
 }
 
-// --- Proses simpan data karyawan ---
-if(isset($_POST['simpan'])){
-    // Ambil semua data form
-    $nama_lengkap = $_POST['nama_lengkap'] ?? '';
-    $nik = $_POST['nik'] ?? '';
-    $ttl = $_POST['ttl'] ?? '';
-    $jenis_kelamin = $_POST['jenis_kelamin'] ?? '';
-    $status_pernikahan = $_POST['status_pernikahan'] ?? '';
-    $alamat = $_POST['alamat'] ?? '';
-    $no_hp = $_POST['no_hp'] ?? '';
-    $email = $_POST['email'] ?? '';
-    $no_ktp = $_POST['no_ktp'] ?? '';
-    $no_npwp = $_POST['no_npwp'] ?? '';
-    $foto_karyawan = uploadFile($_FILES['foto_karyawan'] ?? null, 'foto_');
-
-    $jabatan = $_POST['jabatan'] ?? '';
-    $unit_kerja = $_POST['unit_kerja'] ?? '';
-    $tgl_mulai = $_POST['tgl_mulai'] ?? '';
-    $status_kepegawaian = $_POST['status_kepegawaian'] ?? '';
-    $no_str_sip = $_POST['no_str_sip'] ?? '';
-    $shift = $_POST['shift'] ?? '';
-    $atasan_langsung = $_POST['atasan_langsung'] ?? '';
-
-    $pendidikan_terakhir = $_POST['pendidikan_terakhir'] ?? '';
-    $institusi_pendidikan = $_POST['institusi_pendidikan'] ?? '';
-    $sertifikasi = $_POST['sertifikasi'] ?? '';
-    $pelatihan = $_POST['pelatihan'] ?? '';
-
-    $pengalaman_kerja = $_POST['pengalaman_kerja'] ?? '';
-    $nama_institusi = $_POST['nama_institusi'] ?? '';
-    $durasi_kerja = $_POST['durasi_kerja'] ?? '';
-    $posisi_dijabat = $_POST['posisi_dijabat'] ?? '';
-
-    $gol_darah = $_POST['gol_darah'] ?? '';
-    $riwayat_penyakit = $_POST['riwayat_penyakit'] ?? '';
-    $status_vaksin = $_POST['status_vaksin'] ?? '';
-    $no_bpjs_kesehatan = $_POST['no_bpjs_kesehatan'] ?? '';
-    $no_bpjs_ketenagakerjaan = $_POST['no_bpjs_ketenagakerjaan'] ?? '';
-    $asuransi_tambahan = $_POST['asuransi_tambahan'] ?? '';
-
-    // Dokumen pendukung
-    $dok_ktp = uploadFile($_FILES['dok_ktp'] ?? null, 'ktp_');
-    $dok_ijazah = uploadFile($_FILES['dok_ijazah'] ?? null, 'ijazah_');
-    $dok_str_sip = uploadFile($_FILES['dok_str_sip'] ?? null, 'strsip_');
-    $dok_sertifikat = uploadFile($_FILES['dok_sertifikat'] ?? null, 'sertifikat_');
-    $dok_pengalaman = uploadFile($_FILES['dok_pengalaman'] ?? null, 'pengalaman_');
-    $dok_pas_foto = uploadFile($_FILES['dok_pas_foto'] ?? null, 'pasfoto_');
-
-    // Insert ke database
-    $insert = $conn->prepare("INSERT INTO data_karyawan 
-    (nama_lengkap, nik, ttl, jenis_kelamin, status_pernikahan, alamat, no_hp, email, no_ktp, no_npwp, foto_karyawan, 
-     jabatan, unit_kerja, tgl_mulai, status_kepegawaian, no_str_sip, shift, atasan_langsung,
-     pendidikan_terakhir, institusi_pendidikan, sertifikasi, pelatihan,
-     pengalaman_kerja, nama_institusi, durasi_kerja, posisi_dijabat,
-     gol_darah, riwayat_penyakit, status_vaksin, no_bpjs_kesehatan, no_bpjs_ketenagakerjaan, asuransi_tambahan,
-     dok_ktp, dok_ijazah, dok_str_sip, dok_sertifikat, dok_pengalaman, dok_pas_foto,
-     created_at) 
-    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,NOW())");
-
-    $insert->bind_param("ssssssssssssssssssssssssssssssssssss", 
-        $nama_lengkap, $nik, $ttl, $jenis_kelamin, $status_pernikahan, $alamat, $no_hp, $email, $no_ktp, $no_npwp, $foto_karyawan,
-        $jabatan, $unit_kerja, $tgl_mulai, $status_kepegawaian, $no_str_sip, $shift, $atasan_langsung,
-        $pendidikan_terakhir, $institusi_pendidikan, $sertifikasi, $pelatihan,
-        $pengalaman_kerja, $nama_institusi, $durasi_kerja, $posisi_dijabat,
-        $gol_darah, $riwayat_penyakit, $status_vaksin, $no_bpjs_kesehatan, $no_bpjs_ketenagakerjaan, $asuransi_tambahan,
-        $dok_ktp, $dok_ijazah, $dok_str_sip, $dok_sertifikat, $dok_pengalaman, $dok_pas_foto
-    );
-
-    $_SESSION['flash_message'] = $insert->execute() ? "✅ Data karyawan berhasil disimpan." : "❌ Gagal menyimpan data: ".$insert->error;
-    header("Location: data_karyawan.php");
-    exit;
-}
-
-// Fungsi upload file
-function uploadFile($file, $prefix){
-    if($file && $file['error']==0){
-        $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
-        $path = 'uploads/'.$prefix.time().'.'.$ext;
-        move_uploaded_file($file['tmp_name'], $path);
-        return $path;
-    }
-    return '';
-}
+// Ambil semua user
+$users_result = $conn->query("SELECT * FROM users ORDER BY id ASC");
+$users = $users_result->fetch_all(MYSQLI_ASSOC);
 ?>
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Data Karyawan</title>
+<title>Data Karyawan Lengkap</title>
 <link rel="stylesheet" href="assets/modules/bootstrap/css/bootstrap.min.css">
 <link rel="stylesheet" href="assets/modules/fontawesome/css/all.min.css">
 <link rel="stylesheet" href="assets/css/style.css">
 <link rel="stylesheet" href="assets/css/components.css">
 <style>
-.flash-center {position:fixed;top:20%;left:50%;transform:translate(-50%,-50%);z-index:1050;min-width:300px;max-width:90%;text-align:center;padding:15px;border-radius:8px;font-weight:500;box-shadow:0 5px 15px rgba(0,0,0,0.3);}
+.table-responsive { margin-top:20px; overflow-x:auto; white-space:nowrap; }
+.flash-center { position:fixed; top:20%; left:50%; transform:translate(-50%,-50%); z-index:1050; min-width:300px; max-width:90%; text-align:center; padding:15px; border-radius:8px; font-weight:500; box-shadow:0 5px 15px rgba(0,0,0,0.3);}
+.table td, .table th { vertical-align: middle !important; }
+
+/* Modal full width */
+.modal-dialog.modal-xl {
+    max-width: 95%;
+    width: 95%;
+}
 </style>
 </head>
 <body>
@@ -130,6 +60,7 @@ function uploadFile($file, $prefix){
 <div class="main-content">
 <section class="section">
 <div class="section-body">
+
 <?php if(isset($_SESSION['flash_message'])): ?>
 <div class="alert alert-info flash-center" id="flashMsg">
 <?= htmlspecialchars($_SESSION['flash_message']) ?>
@@ -137,138 +68,152 @@ function uploadFile($file, $prefix){
 <?php unset($_SESSION['flash_message']); endif; ?>
 
 <div class="card">
-<div class="card-header">
-<h4>Form Data Karyawan</h4>
-</div>
-<div class="card-body">
-<form method="POST" enctype="multipart/form-data">
-<ul class="nav nav-tabs" id="karyawanTab" role="tablist">
-<li class="nav-item"><a class="nav-link active" id="data-pribadi-tab" data-toggle="tab" href="#data-pribadi" role="tab">Data Pribadi</a></li>
-<li class="nav-item"><a class="nav-link" id="info-pekerjaan-tab" data-toggle="tab" href="#info-pekerjaan" role="tab">Informasi Pekerjaan</a></li>
-<li class="nav-item"><a class="nav-link" id="pendidikan-tab" data-toggle="tab" href="#pendidikan" role="tab">Kualifikasi & Pendidikan</a></li>
-<li class="nav-item"><a class="nav-link" id="riwayat-tab" data-toggle="tab" href="#riwayat" role="tab">Riwayat Pekerjaan</a></li>
-<li class="nav-item"><a class="nav-link" id="kesehatan-tab" data-toggle="tab" href="#kesehatan" role="tab">Kesehatan & Asuransi</a></li>
-<li class="nav-item"><a class="nav-link" id="dokumen-tab" data-toggle="tab" href="#dokumen" role="tab">Dokumen Pendukung</a></li>
-</ul>
+<div class="card-header"><h4>Data Karyawan Lengkap</h4></div>
+<div class="card-body table-responsive">
+<table class="table table-bordered table-striped table-sm">
+<thead>
+<tr>
+<th>No</th>
 
-<div class="tab-content mt-3">
-<!-- Data Pribadi -->
-<div class="tab-pane fade show active" id="data-pribadi" role="tabpanel">
-<div class="row">
-<div class="col-md-6">
-<div class="form-group"><label>Nama Lengkap</label><input type="text" name="nama_lengkap" class="form-control" required></div>
-<div class="form-group"><label>NIK</label><input type="text" name="nik" class="form-control" required></div>
-<div class="form-group"><label>Tempat & Tanggal Lahir</label><input type="text" name="ttl" class="form-control" required></div>
-<div class="form-group"><label>Jenis Kelamin</label>
-<select name="jenis_kelamin" class="form-control" required>
-<option value="">Pilih</option>
-<option value="Laki-laki">Laki-laki</option>
-<option value="Perempuan">Perempuan</option>
-</select></div>
-<div class="form-group"><label>Status Pernikahan</label><input type="text" name="status_pernikahan" class="form-control"></div>
-</div>
-<div class="col-md-6">
-<div class="form-group"><label>Alamat Lengkap</label><textarea name="alamat" class="form-control"></textarea></div>
-<div class="form-group"><label>No. HP</label><input type="text" name="no_hp" class="form-control"></div>
-<div class="form-group"><label>Email</label><input type="email" name="email" class="form-control"></div>
-<div class="form-group"><label>No. KTP</label><input type="text" name="no_ktp" class="form-control"></div>
-<div class="form-group"><label>No. NPWP</label><input type="text" name="no_npwp" class="form-control"></div>
-<div class="form-group"><label>Foto Karyawan</label><input type="file" name="foto_karyawan" class="form-control"></div>
-</div>
-</div>
-</div>
+<th>Aksi</th>
+<th>NIK</th>
+<th>Nama</th>
+<th>Jabatan</th>
+<th>Unit Kerja</th>
+<th>Email</th>
+<th>No HP</th>
+<th>Status</th>
+<th>Jenis Kelamin</th>
+<th>Tempat Lahir</th>
+<th>Tanggal Lahir</th>
+<th>Alamat</th>
+<th>Kota</th>
+<th>No. KTP</th>
+<th>Hubungan Keluarga</th>
+<th>Riwayat Pekerjaan</th>
+<th>Riwayat Pendidikan</th>
+<th>Gol Darah</th>
+<th>Riwayat Penyakit</th>
+<th>Status Vaksinasi</th>
+<th>BPJS Kesehatan</th>
+<th>BPJS Ketenagakerjaan</th>
+<th>Asuransi Tambahan</th>
+<th>Dokumen Pendukung</th>
+</tr>
+</thead>
+<tbody>
+<?php
+$no = 1;
+foreach($users as $user){
+    $userId = $user['id'];
 
-<!-- Informasi Pekerjaan -->
-<div class="tab-pane fade" id="info-pekerjaan" role="tabpanel">
-<div class="row">
-<div class="col-md-6">
-<div class="form-group"><label>Jabatan/Posisi</label><input type="text" name="jabatan" class="form-control"></div>
-<div class="form-group"><label>Departemen/Unit Kerja</label><input type="text" name="unit_kerja" class="form-control"></div>
-<div class="form-group"><label>Tanggal Mulai Bekerja</label><input type="date" name="tgl_mulai" class="form-control"></div>
-<div class="form-group"><label>Status Kepegawaian</label><input type="text" name="status_kepegawaian" class="form-control"></div>
-</div>
-<div class="col-md-6">
-<div class="form-group"><label>No. STR/SIP</label><input type="text" name="no_str_sip" class="form-control"></div>
-<div class="form-group"><label>Jam Kerja / Shift</label><input type="text" name="shift" class="form-control"></div>
-<div class="form-group"><label>Atasan Langsung</label><input type="text" name="atasan_langsung" class="form-control"></div>
-</div>
-</div>
-</div>
+    // Informasi pribadi
+    $stmt = $conn->prepare("SELECT * FROM informasi_pribadi WHERE user_id = ? LIMIT 1");
+    $stmt->bind_param("i", $userId); $stmt->execute();
+    $info_pribadi = $stmt->get_result()->fetch_assoc() ?? [];
 
-<!-- Kualifikasi & Pendidikan -->
-<div class="tab-pane fade" id="pendidikan" role="tabpanel">
-<div class="row">
-<div class="col-md-6">
-<div class="form-group"><label>Pendidikan Terakhir</label><input type="text" name="pendidikan_terakhir" class="form-control"></div>
-<div class="form-group"><label>Institusi Pendidikan</label><input type="text" name="institusi_pendidikan" class="form-control"></div>
-</div>
-<div class="col-md-6">
-<div class="form-group"><label>Sertifikasi Profesi</label><input type="text" name="sertifikasi" class="form-control"></div>
-<div class="form-group"><label>Pelatihan yang Pernah Diikuti</label><textarea name="pelatihan" class="form-control"></textarea></div>
-</div>
-</div>
-</div>
+    // Riwayat pekerjaan
+    $stmt = $conn->prepare("SELECT * FROM riwayat_pekerjaan WHERE user_id = ? ORDER BY tanggal_mulai DESC");
+    $stmt->bind_param("i", $userId); $stmt->execute();
+    $pekerjaan_res = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $pekerjaan_str = implode(" | ", array_map(fn($p)=>($p['nama_perusahaan']??'-')." ({$p['posisi']}, {$p['tanggal_mulai']} s/d {$p['tanggal_selesai']})", $pekerjaan_res));
 
-<!-- Riwayat Pekerjaan -->
-<div class="tab-pane fade" id="riwayat" role="tabpanel">
-<div class="row">
-<div class="col-md-6">
-<div class="form-group"><label>Pengalaman Kerja Sebelumnya</label><textarea name="pengalaman_kerja" class="form-control"></textarea></div>
-<div class="form-group"><label>Nama Institusi</label><input type="text" name="nama_institusi" class="form-control"></div>
-</div>
-<div class="col-md-6">
-<div class="form-group"><label>Durasi Kerja</label><input type="text" name="durasi_kerja" class="form-control"></div>
-<div class="form-group"><label>Posisi yang Dijabat</label><input type="text" name="posisi_dijabat" class="form-control"></div>
-</div>
-</div>
-</div>
+    // Riwayat pendidikan
+    $stmt = $conn->prepare("SELECT * FROM riwayat_pendidikan WHERE user_id = ? ORDER BY tgl_lulus DESC");
+    $stmt->bind_param("i", $userId); $stmt->execute();
+    $pendidikan_res = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $pendidikan_str = implode(" | ", array_map(fn($pd)=>($pd['pendidikan_terakhir']??'-')." {$pd['jurusan']} ({$pd['kampus']}, {$pd['tgl_lulus']})", $pendidikan_res));
 
-<!-- Kesehatan & Asuransi -->
-<div class="tab-pane fade" id="kesehatan" role="tabpanel">
-<div class="row">
-<div class="col-md-6">
-<div class="form-group"><label>Golongan Darah</label><input type="text" name="gol_darah" class="form-control"></div>
-<div class="form-group"><label>Riwayat Penyakit Penting</label><textarea name="riwayat_penyakit" class="form-control"></textarea></div>
-<div class="form-group"><label>Status Vaksinasi</label><input type="text" name="status_vaksin" class="form-control"></div>
-</div>
-<div class="col-md-6">
-<div class="form-group"><label>No. BPJS Kesehatan</label><input type="text" name="no_bpjs_kesehatan" class="form-control"></div>
-<div class="form-group"><label>No. BPJS Ketenagakerjaan</label><input type="text" name="no_bpjs_ketenagakerjaan" class="form-control"></div>
-<div class="form-group"><label>Asuransi Tambahan</label><input type="text" name="asuransi_tambahan" class="form-control"></div>
-</div>
-</div>
-</div>
+    // Riwayat kesehatan
+    $stmt = $conn->prepare("SELECT * FROM riwayat_kesehatan WHERE user_id = ?");
+    $stmt->bind_param("i", $userId); $stmt->execute();
+    $kesehatan = $stmt->get_result()->fetch_assoc() ?? [];
 
-<!-- Dokumen Pendukung -->
-<div class="tab-pane fade" id="dokumen" role="tabpanel">
-<div class="row">
-<div class="col-md-6">
-<div class="form-group"><label>Scan KTP</label><input type="file" name="dok_ktp" class="form-control"></div>
-<div class="form-group"><label>Ijazah & Transkrip Nilai</label><input type="file" name="dok_ijazah" class="form-control"></div>
-<div class="form-group"><label>STR/SIP</label><input type="file" name="dok_str_sip" class="form-control"></div>
-</div>
-<div class="col-md-6">
-<div class="form-group"><label>Sertifikat Pelatihan</label><input type="file" name="dok_sertifikat" class="form-control"></div>
-<div class="form-group"><label>Surat Pengalaman Kerja</label><input type="file" name="dok_pengalaman" class="form-control"></div>
-<div class="form-group"><label>Pas Foto</label><input type="file" name="dok_pas_foto" class="form-control"></div>
-</div>
-</div>
-</div>
+    // Dokumen pendukung
+    $stmt = $conn->prepare("SELECT * FROM dokumen_pendukung WHERE user_id = ?");
+    $stmt->bind_param("i", $userId); $stmt->execute();
+    $dokumen = $stmt->get_result()->fetch_assoc() ?? [];
+    $dok_fields = ['ktp','ijazah','str','sip','vaksin','pelatihan','surat_kerja','pas_foto'];
+    $dokumen_str = implode(" ", array_map(fn($f)=>!empty($dokumen[$f]) ? "<a href='uploads/{$dokumen[$f]}' target='_blank' title='".strtoupper($f)."'><i class='fas fa-file-pdf'></i></a>" : '', $dok_fields));
 
-<button type="submit" name="simpan" class="btn btn-primary mt-3"><i class="fas fa-save"></i> Simpan Data Karyawan</button>
-</form>
+    // JSON untuk modal
+    $full_data = htmlspecialchars(json_encode([
+        'user'=>$user,
+        'info_pribadi'=>$info_pribadi,
+        'pekerjaan'=>$pekerjaan_res,
+        'pendidikan'=>$pendidikan_res,
+        'kesehatan'=>$kesehatan,
+        'dokumen'=>$dokumen
+    ], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP));
+
+   echo "<tr>
+    <td>{$no}</td>
+    <td class='text-center'>
+    <a href='cetak_karyawan.php?id={$userId}' target='_blank' title='Cetak' class='btn btn-success btn-sm mx-1'>
+        <i class='fas fa-print'></i>
+    </a>
+    <button class='btn btn-info btn-sm mx-1' onclick='lihatData({$full_data})' title='Lihat'>
+        <i class='fas fa-eye'></i>
+    </button>
+</td>
+    <td>".htmlspecialchars($user['nik'])."</td>
+    <td>".htmlspecialchars($user['nama'])."</td>
+    <td>".htmlspecialchars($user['jabatan'])."</td>
+    <td>".htmlspecialchars($user['unit_kerja'])."</td>
+    <td>".htmlspecialchars($user['email'])."</td>
+    <td>".htmlspecialchars($user['no_hp'])."</td>
+    <td>".htmlspecialchars($user['status'])."</td>
+    <td>".htmlspecialchars($info_pribadi['jenis_kelamin']??'-')."</td>
+    <td>".htmlspecialchars($info_pribadi['tempat_lahir']??'-')."</td>
+    <td>".(!empty($info_pribadi['tanggal_lahir']) ? date('d-m-Y', strtotime($info_pribadi['tanggal_lahir'])) : '-')."</td>
+    <td>".htmlspecialchars($info_pribadi['alamat']??'-')."</td>
+    <td>".htmlspecialchars($info_pribadi['kota']??'-')."</td>
+    <td>".htmlspecialchars($info_pribadi['no_ktp']??'-')."</td>
+    <td>".htmlspecialchars($info_pribadi['hubungan_keluarga']??'-')."</td>
+    <td>".htmlspecialchars($pekerjaan_str)."</td>
+    <td>".htmlspecialchars($pendidikan_str)."</td>
+    <td>".htmlspecialchars($kesehatan['gol_darah']??'-')."</td>
+    <td>".htmlspecialchars($kesehatan['riwayat_penyakit']??'-')."</td>
+    <td>".htmlspecialchars($kesehatan['status_vaksinasi']??'-')."</td>
+    <td>".htmlspecialchars($kesehatan['no_bpjs_kesehatan']??'-')."</td>
+    <td>".htmlspecialchars($kesehatan['no_bpjs_kerja']??'-')."</td>
+    <td>".htmlspecialchars($kesehatan['asuransi_tambahan']??'-')."</td>
+    <td class='text-center'>{$dokumen_str}</td>
+  
+
+</tr>";
+
+    $no++;
+}
+?>
+</tbody>
+</table>
 </div>
 </div>
 
 </div>
 </section>
 </div>
-</div>
+
+<!-- Modal Detail -->
+<div class="modal fade" id="modalLihat" tabindex="-1" role="dialog" aria-labelledby="modalLihatLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalLihatLabel">Detail Karyawan</h5>
+       
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-footer">
+      
+      </div>
+    </div>
+  </div>
 </div>
 
 <script src="assets/modules/jquery.min.js"></script>
 <script src="assets/modules/popper.js"></script>
-<script src="assets/modules/bootstrap/js/bootstrap.min.js"></script>
+<script src="assets/modules/bootstrap/js/bootstrap.bundle.min.js"></script>
 <script src="assets/modules/nicescroll/jquery.nicescroll.min.js"></script>
 <script src="assets/modules/moment.min.js"></script>
 <script src="assets/js/stisla.js"></script>
@@ -276,8 +221,66 @@ function uploadFile($file, $prefix){
 <script src="assets/js/custom.js"></script>
 <script>
 $(document).ready(function(){
-    setTimeout(function(){$("#flashMsg").fadeOut("slow");},3000);
+    setTimeout(()=>$("#flashMsg").fadeOut("slow"),3000);
 });
+
+function lihatData(data){
+    let html = '<h5>Informasi Pribadi</h5><table class="table table-sm table-bordered">';
+    const info = data.info_pribadi || {};
+    const user = data.user || {};
+    html += `<tr><th>NIK</th><td>${user.nik||'-'}</td><th>Nama</th><td>${user.nama||'-'}</td></tr>`;
+    html += `<tr><th>Jenis Kelamin</th><td>${info.jenis_kelamin||'-'}</td><th>Tempat Lahir</th><td>${info.tempat_lahir||'-'}</td></tr>`;
+    html += `<tr><th>Tanggal Lahir</th><td>${info.tanggal_lahir||'-'}</td><th>Alamat</th><td>${info.alamat||'-'}</td></tr>`;
+    html += `<tr><th>Kota</th><td>${info.kota||'-'}</td><th>No. KTP</th><td>${info.no_ktp||'-'}</td></tr>`;
+    html += `<tr><th>Hubungan Keluarga</th><td colspan="3">${info.hubungan_keluarga||'-'}</td></tr>`;
+    html += '</table>';
+
+    // Riwayat Pekerjaan
+    html += '<h5>Riwayat Pekerjaan</h5><table class="table table-sm table-bordered"><tr><th>No</th><th>Perusahaan</th><th>Posisi</th><th>Periode</th><th>Alasan Keluar</th></tr>';
+    data.pekerjaan.forEach((p,i)=>{
+        html += `<tr>
+            <td>${i+1}</td>
+            <td>${p.nama_perusahaan||'-'}</td>
+            <td>${p.posisi||'-'}</td>
+            <td>${p.tanggal_mulai||'-'} s/d ${p.tanggal_selesai||'-'}</td>
+            <td>${p.alasan_keluar||'-'}</td>
+        </tr>`;
+    });
+    html += '</table>';
+
+    // Riwayat Pendidikan
+    html += '<h5>Riwayat Pendidikan</h5><table class="table table-sm table-bordered"><tr><th>No</th><th>Pendidikan</th><th>Jurusan</th><th>Kampus</th><th>Tanggal Lulus</th><th>No Ijazah</th></tr>';
+    data.pendidikan.forEach((pd,i)=>{
+        html += `<tr>
+            <td>${i+1}</td>
+            <td>${pd.pendidikan_terakhir||'-'}</td>
+            <td>${pd.jurusan||'-'}</td>
+            <td>${pd.kampus||'-'}</td>
+            <td>${pd.tgl_lulus||'-'}</td>
+            <td>${pd.no_ijazah||'-'}</td>
+        </tr>`;
+    });
+    html += '</table>';
+
+    // Riwayat Kesehatan
+    const k = data.kesehatan || {};
+    html += '<h5>Riwayat Kesehatan</h5><table class="table table-sm table-bordered">';
+    html += `<tr><th>Gol Darah</th><td>${k.gol_darah||'-'}</td><th>Riwayat Penyakit</th><td>${k.riwayat_penyakit||'-'}</td></tr>`;
+    html += `<tr><th>Status Vaksinasi</th><td>${k.status_vaksinasi||'-'}</td><th>BPJS Kesehatan</th><td>${k.no_bpjs_kesehatan||'-'}</td></tr>`;
+    html += `<tr><th>BPJS Kerja</th><td>${k.no_bpjs_kerja||'-'}</td><th>Asuransi Tambahan</th><td>${k.asuransi_tambahan||'-'}</td></tr>`;
+    html += '</table>';
+
+    // Dokumen Pendukung
+    html += '<h5>Dokumen Pendukung</h5><ul>';
+    const d = data.dokumen || {};
+    for(let key in d){
+        if(d[key]) html += `<li>${key.toUpperCase()}: <a href="uploads/${d[key]}" target="_blank">Lihat</a></li>`;
+    }
+    html += '</ul>';
+
+    $('#modalBody').html(html);
+    new bootstrap.Modal(document.getElementById('modalLihat')).show();
+}
 </script>
 </body>
 </html>

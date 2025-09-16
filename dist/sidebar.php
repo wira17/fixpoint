@@ -547,7 +547,7 @@ while ($row = mysqli_fetch_assoc($result)) {
   <ul class="dropdown-menu">
 
 
-    <?php if (in_array('data_karyawan.php', $allowed_files)): ?>
+<?php if (in_array('data_karyawan.php', $allowed_files)): ?>
 <li>
   <a class="nav-link" href="data_karyawan.php">
     <i class="fas fa-users"></i> <span>Data Karyawan</span>
@@ -555,8 +555,22 @@ while ($row = mysqli_fetch_assoc($result)) {
 </li>
 <?php endif; ?>
 
+<?php if (in_array('data_karyawan2.php', $allowed_files)): ?>
+<li>
+  <a class="nav-link" href="data_karyawan2.php">
+    <i class="fas fa-users"></i> <span>Data Karyawan 2</span>
+  </a>
+</li>
+<?php endif; ?>
 
 
+<?php if (in_array('exit_clearance.php', $allowed_files)): ?>
+<li>
+  <a class="nav-link" href="exit_clearance.php">
+    <i class="fas fa-users"></i> <span>Exit Clearance</span>
+  </a>
+</li>
+<?php endif; ?>
 
   <?php if (in_array('rekap_catatan_kerja.php', $allowed_files)): ?>
 <li>
@@ -864,15 +878,15 @@ while ($row = mysqli_fetch_assoc($result)) {
     <?php if (in_array('profile.php', $allowed_files)): ?>
       <li>
         <a class="nav-link" href="profile.php">
-          <i class="fas fa-user-circle"></i> <span>Profil Saya</span>
+          <i class="fas fa-user-circle"></i> <span>Akun Saya</span>
         </a>
       </li>
     <?php endif; ?>
 
-    <?php if (in_array('ubah_password.php', $allowed_files)): ?>
+    <?php if (in_array('profile2.php', $allowed_files)): ?>
       <li>
-        <a class="nav-link" href="ubah_password.php">
-          <i class="fas fa-key"></i> <span>Ubah Password</span>
+        <a class="nav-link" href="profile2.php">
+          <i class="fas fa-key"></i> <span>Profil Saya</span>
         </a>
       </li>
     <?php endif; ?>

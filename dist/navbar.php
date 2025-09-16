@@ -515,4 +515,17 @@ date_default_timezone_set('Asia/Jakarta'); // WIB
 
   
 </script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+<?php if (isset($_SESSION['notif'])): ?>
+<script>
+Swal.fire({
+  icon: '<?= $_SESSION['notif']['type']; ?>',
+  title: '<?= $_SESSION['notif']['msg']; ?>',
+  position: 'center',
+  showConfirmButton: false,
+  timer: 2000,
+  timerProgressBar: true
+});
+</script>
+<?php unset($_SESSION['notif']); endif; ?>

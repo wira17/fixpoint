@@ -6,7 +6,7 @@ date_default_timezone_set('Asia/Jakarta');
 $user_id = $_SESSION['user_id'];
 $current_file = basename(__FILE__);
 
-// Cek apakah user boleh mengakses halaman ini
+// Cek akses user
 $query = "SELECT 1 FROM akses_menu 
           JOIN menu ON akses_menu.menu_id = menu.id 
           WHERE akses_menu.user_id = '$user_id' AND menu.file_menu = '$current_file'";
@@ -18,18 +18,17 @@ if (mysqli_num_rows($result) == 0) {
 
 $success = '';
 
-// Proses update jika form dikirim
+// Proses update
 if (isset($_POST['update'])) {
-  $nama         = mysqli_real_escape_string($conn, $_POST['nama']);
-  $email        = mysqli_real_escape_string($conn, $_POST['email']);
-  $no_hp        = mysqli_real_escape_string($conn, $_POST['no_hp']);
-
-  $jabatan_id   = $_POST['jabatan'];
-  $unit_kerja_id= $_POST['unit_kerja'];
-  $atasan_id    = intval($_POST['atasan_id']);
+  $nama          = mysqli_real_escape_string($conn, $_POST['nama']);
+  $email         = mysqli_real_escape_string($conn, $_POST['email']);
+  $no_hp         = mysqli_real_escape_string($conn, $_POST['no_hp']);
+  $jabatan_id    = $_POST['jabatan'];
+  $unit_kerja_id = $_POST['unit_kerja'];
+  $atasan_id     = intval($_POST['atasan_id']);
   $password_baru = trim($_POST['password_baru'] ?? '');
 
-  // Ambil nama jabatan dari ID
+  // Ambil nama jabatan
   $jabatan_nama = '';
   if (!empty($jabatan_id)) {
     $res_jabatan = mysqli_query($conn, "SELECT nama_jabatan FROM jabatan WHERE id = '$jabatan_id' LIMIT 1");
@@ -38,7 +37,7 @@ if (isset($_POST['update'])) {
     }
   }
 
-  // Ambil nama unit kerja dari ID
+  // Ambil nama unit kerja
   $unit_nama = '';
   if (!empty($unit_kerja_id)) {
     $res_unit = mysqli_query($conn, "SELECT nama_unit FROM unit_kerja WHERE id = '$unit_kerja_id' LIMIT 1");
@@ -47,7 +46,7 @@ if (isset($_POST['update'])) {
     }
   }
 
-  // Buat query update
+  // Query update
   $query_update = "UPDATE users SET 
     nama = '$nama',
     email = '$email',
@@ -62,7 +61,6 @@ if (isset($_POST['update'])) {
   }
 
   $query_update .= " WHERE id = $user_id";
-
   $update = mysqli_query($conn, $query_update);
 
   if ($update) {
@@ -77,15 +75,15 @@ if (isset($_POST['update'])) {
 // Ambil data user
 $query = mysqli_query($conn, "SELECT nik, nama, jabatan, unit_kerja, email, no_hp, status, created_at, atasan_id FROM users WHERE id = $user_id");
 $row = mysqli_fetch_assoc($query);
-$nik         = $row['nik'];
-$nama        = $row['nama'];
-$jabatan     = $row['jabatan'];
-$unit_kerja  = $row['unit_kerja'];
-$email       = $row['email'];
-$no_hp       = $row['no_hp'];
-$status      = $row['status'];
-$created_at  = $row['created_at'];
-$atasan_id   = $row['atasan_id'];
+$nik        = $row['nik'];
+$nama       = $row['nama'];
+$jabatan    = $row['jabatan'];     // ini nama jabatan yang tersimpan
+$unit_kerja = $row['unit_kerja'];  // ini nama unit kerja yang tersimpan
+$email      = $row['email'];
+$no_hp      = $row['no_hp'];
+$status     = $row['status'];
+$created_at = $row['created_at'];
+$atasan_id  = $row['atasan_id'];
 
 // Ambil daftar jabatan
 $daftar_jabatan_arr = [];
@@ -97,12 +95,12 @@ $daftar_unit_arr = [];
 $res = mysqli_query($conn, "SELECT id, nama_unit FROM unit_kerja");
 while($r = mysqli_fetch_assoc($res)) $daftar_unit_arr[] = $r;
 
-// Ambil daftar atasan (kecuali dirinya sendiri)
+// Ambil daftar atasan (selain dirinya)
 $daftar_atasan_arr = [];
 $res = mysqli_query($conn, "SELECT id, nama FROM users WHERE id != $user_id");
 while($r = mysqli_fetch_assoc($res)) $daftar_atasan_arr[] = $r;
 
-// Ambil nama atasan
+// Nama atasan
 $nama_atasan = '-';
 if (!empty($atasan_id)) {
   $q_atasan = mysqli_query($conn, "SELECT nama FROM users WHERE id = '$atasan_id' LIMIT 1");
@@ -111,20 +109,20 @@ if (!empty($atasan_id)) {
 }
 
 $nama_jabatan = $jabatan ?: '-';
-$nama_unit = $unit_kerja ?: '-';
+$nama_unit    = $unit_kerja ?: '-';
 ?>
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no">
 <title>f.i.x.p.o.i.n.t</title>
 <link rel="stylesheet" href="assets/modules/bootstrap/css/bootstrap.min.css">
 <link rel="stylesheet" href="assets/modules/fontawesome/css/all.min.css">
 <link rel="stylesheet" href="assets/css/style.css">
 <link rel="stylesheet" href="assets/css/components.css">
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
 <style>
 .form-inline label { width: 120px; }
 .list-group-item strong { min-width: 150px; display: inline-block; }
@@ -139,15 +137,20 @@ $nama_unit = $unit_kerja ?: '-';
 <div class="main-content">
 <section class="section">
 <div class="section-body">
-<?php if ($success): ?>
-<div class="alert alert-success"><?= $success ?></div>
-<?php endif; ?>
 
 <div class="card">
 <div class="card-header"><h4>Informasi Akun</h4></div>
 <div class="card-body">
 
 <form method="POST" id="formEdit" style="display: none;">
+  <!-- NIK -->
+  <div class="form-group row">
+    <label class="col-sm-3 col-form-label">NIK</label>
+    <div class="col-sm-9">
+      <input type="text" value="<?= htmlspecialchars($nik); ?>" class="form-control" readonly>
+    </div>
+  </div>
+
   <div class="form-group row">
     <label class="col-sm-3 col-form-label">Nama</label>
     <div class="col-sm-9">
@@ -169,13 +172,14 @@ $nama_unit = $unit_kerja ?: '-';
     </div>
   </div>
 
+  <!-- Jabatan -->
   <div class="form-group row">
     <label class="col-sm-3 col-form-label">Jabatan</label>
     <div class="col-sm-9">
       <select name="jabatan" class="form-control select2" style="width: 100%;">
         <option value="">- Pilih Jabatan -</option>
         <?php foreach($daftar_jabatan_arr as $j): ?>
-          <option value="<?= $j['id']; ?>" <?= ($jabatan == $j['id']) ? 'selected' : '' ?>>
+          <option value="<?= $j['id']; ?>" <?= ($jabatan == $j['nama_jabatan']) ? 'selected' : '' ?>>
             <?= htmlspecialchars($j['nama_jabatan']); ?>
           </option>
         <?php endforeach; ?>
@@ -183,13 +187,14 @@ $nama_unit = $unit_kerja ?: '-';
     </div>
   </div>
 
+  <!-- Unit kerja -->
   <div class="form-group row">
     <label class="col-sm-3 col-form-label">Unit Kerja</label>
     <div class="col-sm-9">
       <select name="unit_kerja" class="form-control select2" style="width: 100%;">
         <option value="">- Pilih Unit Kerja -</option>
         <?php foreach($daftar_unit_arr as $u): ?>
-          <option value="<?= $u['id']; ?>" <?= ($unit_kerja == $u['id']) ? 'selected' : '' ?>>
+          <option value="<?= $u['id']; ?>" <?= ($unit_kerja == $u['nama_unit']) ? 'selected' : '' ?>>
             <?= htmlspecialchars($u['nama_unit']); ?>
           </option>
         <?php endforeach; ?>
@@ -197,6 +202,7 @@ $nama_unit = $unit_kerja ?: '-';
     </div>
   </div>
 
+  <!-- Atasan -->
   <div class="form-group row">
     <label class="col-sm-3 col-form-label">Atasan</label>
     <div class="col-sm-9">
@@ -211,6 +217,7 @@ $nama_unit = $unit_kerja ?: '-';
     </div>
   </div>
 
+  <!-- Password -->
   <div class="form-group row">
     <label class="col-sm-3 col-form-label">Password Baru</label>
     <div class="col-sm-9">
@@ -226,6 +233,7 @@ $nama_unit = $unit_kerja ?: '-';
   </div>
 </form>
 
+<!-- Tampilan data -->
 <div id="dataView">
   <ul class="list-group list-group-flush">
     <li class="list-group-item"><strong>NIK</strong> : <?= htmlspecialchars($nik); ?></li>
@@ -241,7 +249,7 @@ $nama_unit = $unit_kerja ?: '-';
 </div>
 
 <div class="card-footer text-right" id="editButton">
-  <button class="btn btn-primary" onclick="toggleForm()">Edit Profil</button>
+  <button class="btn btn-primary" onclick="toggleForm()">Edit Akun</button>
 </div>
 
 </div></div>
@@ -255,7 +263,6 @@ $nama_unit = $unit_kerja ?: '-';
 <script src="assets/js/stisla.js"></script>
 <script src="assets/js/scripts.js"></script>
 <script src="assets/js/custom.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <script>
 function toggleForm() {
@@ -272,8 +279,18 @@ $(document).ready(function() {
   $('select[name="jabatan"]').select2({ placeholder: "Pilih Jabatan" });
   $('select[name="unit_kerja"]').select2({ placeholder: "Pilih Unit Kerja" });
   $('select[name="atasan_id"]').select2({ placeholder: "Pilih Atasan" });
+
+  <?php if (!empty($success)): ?>
+    Swal.fire({
+      icon: 'success',
+      title: 'Berhasil!',
+      text: '<?= $success ?>',
+      showConfirmButton: false,
+      timer: 2000,
+      position: 'center'
+    });
+  <?php endif; ?>
 });
 </script>
-
 </body>
 </html>

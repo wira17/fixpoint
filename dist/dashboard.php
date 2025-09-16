@@ -64,6 +64,19 @@ $barang_it_total = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as to
     <div class="main-wrapper main-wrapper-1">
 
       <?php include 'navbar.php'; ?>
+      <?php if (isset($_SESSION['notif'])): ?>
+  <div class="container mt-3">
+    <div class="alert alert-<?= $_SESSION['notif']['type']; ?> alert-dismissible fade show" role="alert">
+      <i class="fas <?= $_SESSION['notif']['type'] == 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle'; ?>"></i>
+      <?= htmlspecialchars($_SESSION['notif']['msg']); ?>
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+  </div>
+  <?php unset($_SESSION['notif']); ?>
+<?php endif; ?>
+
       <?php include 'sidebar.php'; ?>
 
       <div class="main-content">
@@ -141,5 +154,21 @@ $barang_it_total = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as to
   <script src="assets/js/stisla.js"></script>
   <script src="assets/js/scripts.js"></script>
   <script src="assets/js/custom.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<?php if (isset($_SESSION['notif'])): ?>
+<script>
+Swal.fire({
+  icon: '<?= $_SESSION['notif']['type']; ?>',
+  title: '<?= $_SESSION['notif']['msg']; ?>',
+  showConfirmButton: false,
+  timer: 2000,
+  timerProgressBar: true,
+  position: 'center'
+});
+</script>
+<?php unset($_SESSION['notif']); endif; ?>
+
+
+
 </body>
 </html>
